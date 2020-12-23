@@ -240,9 +240,9 @@ def match_rule_value(weather, rule, value):
     SINGLE_VALUE = 3
     LIST_VALUE = 4
 
-    min_key = "".join([value, "_min"])
-    max_key = "".join([value, "_max"])
-    list_key = "".join([value, "_list"])
+    min_key = value + "_min"
+    max_key = value + "_max"
+    list_key = value + "_list"
 
     # how is the value defined within the rule?
     if value in rule:
