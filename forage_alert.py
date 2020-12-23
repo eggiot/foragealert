@@ -212,6 +212,9 @@ def get_weather(day, hour):
 
 # MATCHING FUNCTIONS
 def strip_match_keys(match_key):
+    """
+    Strip "_list", "_min", or "_max" from match_key
+    """
     to_strip = ["_list", "_min", "_max"]
     for value in to_strip:
         if value in match_key:
@@ -224,11 +227,12 @@ def match_rule_value(weather, rule, value):
     This function checks to see if the value in weather matches the value or
     falls between the value range in rule.
 
-    Assumes that weather defines absolute values, not ranges. Assumes that
-    rule defines a range using key(s) in the format "value_min" and / or
-    "value_max" or defines an absolute value using the key "value".
+    Assumes that weather defines absolute values, not ranges, which is always
+    true if extracted with get_weather.
 
-    Will work if days or hours are defined using value_min or value_max.
+    Assumes that rule defines a range using key(s) in the format "value_min"
+    and / or "value_max" or defines an absolute value using the key "value",
+    or defines a number of absolute values using the key "value_list".
     """
     UPPER_BOUNDED = 0
     LOWER_BOUNDED = 1
@@ -288,8 +292,8 @@ def match_rule_value(weather, rule, value):
 
 def match_rule(weather, rule):
     """
-    This function matches this_weather against tule. If the fields
-    specified in this_weather match those same fields in that_weather, it
+    This function matches weather against the rule. If the fields
+    specified in weather match those same fields in rule, it
     returns True, otherwise False
     """
     for key in weather:
@@ -305,8 +309,7 @@ def match_rule(weather, rule):
 # HIGH-LEVEL API FUNCTIONS
 def weather_is(rule):
     """
-    This function returns True if the weather currently matches the weather
-    dictionary argument
+    This function returns True if the weather currently matches the rule
     """
     current_weather = get_weather(CURRENT_DAY, CURRENT_HOUR)
     return match_rule(current_weather, rule)
@@ -314,9 +317,9 @@ def weather_is(rule):
 
 def weather_was_sometimes(rule, amount):
     """
-    This function returns True if the weather has matched the weather
-    dictionary argument *amount*+ percent of the time over the hours specified
-    in *hours* over the past number of *days*.
+    This function returns True if the weather at the hours and days specified
+    in the rule has matched the weather specified in the rule over the
+    specified percentage of instances
     """
     weathers = []
 
@@ -379,9 +382,8 @@ def weather_was_sometimes(rule, amount):
 
 def weather_was(rule):
     """
-    This function returns True if the weather has matched the weather
-    dictionary argument over the hours specified in the hours list argument
-    over the past number of days specified in the days integer argument.
+    This function returns True if the weather at the hours and days specified
+    in the rule has always matched the weather specified in the rule.
     """
 
     if not test_rule_validity(rule):
