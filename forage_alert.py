@@ -19,6 +19,8 @@ parser.add_argument("latitude", help="Latitude",
                     type=float)
 parser.add_argument("longitude", help="Longitude",
                     type=float)
+parser.add_argument("-m", "--mode",
+                    help="One of 'alert' or 'update'")
 # version number and Dark Sky attribution
 parser.add_argument('-v', '--version', action='version',
                     version="%(prog)s 1.0. " + ds_attribution,
@@ -33,7 +35,7 @@ CURRENT_HOUR = datetime.datetime.now().hour
 # hour lists
 ALL_DAY = list(range(24))
 ALL_NIGHT = list(range(7))
-ALL_EVENING = list(range(7, 11))
+ALL_EVENING = list(range(19, 23))
 # day lists
 PAST_WEEK = list(range(7))
 PAST_2_WEEKS = list(range(14))
@@ -395,3 +397,25 @@ def weather_was(rule):
 
 if db_new:
     create_db()
+
+# rules
+
+# TODO: improve the defining of rules
+items = []
+morel_results = []
+morel_temperature_rule = {"day_min": 0, "day_max": 7, "min_temp": 10,
+                          "hour_list": ALL_EVENING + ALL_NIGHT}
+morel_rain_rule = {"day_min": 0, "day_max": 7, "precip": 50,
+                   "hour_list": ALL_DAY}
+morel_results.append(weather_was(morel_temperature_rule))
+morel_results.append(weather_was_sometimes(morel_rain_rule, 60))
+morel = {"name": "morel", "results": morel_results}
+items.append(morel)
+
+# check mode and act accordingly
+if args.mode == "update":
+    update_weather()
+elif args.mode == "alert":
+    for item in items:
+        if False not in item["results"]:
+            print("forage " + item["name"])
