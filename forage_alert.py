@@ -437,6 +437,12 @@ if db_new:
 
 foraging_items = []
 
+morel = ForagingItem("Morel")
+morel.add_rule(Rule({"day_max": 7, "hour_max": 8, "temp_min": 10}))
+morel.add_rule(Rule({"day_max": 7, "hour_list": ALL_DAY,
+                     "precip": 50, "amount": 60}))
+foraging_items.append(morel)
+
 # check mode and act accordingly
 if args.mode == "update":
     update_weather()
