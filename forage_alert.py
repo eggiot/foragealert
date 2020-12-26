@@ -414,6 +414,9 @@ class ForagingItem():
         self.rules = []
         self.status = True
 
+    def add_rule(self, rule):
+        self.rules.append(rule)
+
     def check(self):
         for rule in self.rules:
             if not rule.test():
