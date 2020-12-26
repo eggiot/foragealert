@@ -308,89 +308,89 @@ def match_rule(weather, rule):
     return True
 
 
-# HIGH-LEVEL API FUNCTIONS
-def weather_is(rule):
-    """
-    This function returns True if the weather currently matches the rule
-    """
-    current_weather = get_weather(CURRENT_DAY, CURRENT_HOUR)
-    return match_rule(current_weather, rule)
+# ForagingItem class
 
+class ForagingItem():
+    def __init__(self):
+        self.rules = []
+        self.status = True
 
-def weather_was_sometimes(rule, amount):
-    """
-    This function returns True if the weather at the hours and days specified
-    in the rule has matched the weather specified in the rule over the
-    specified percentage of instances
-    """
-    weathers = []
+    def check(self):
+        for rule in self.rules:
+            if not self.__test__rule__(rule):
+                self.status = False
+                return False
+        self.status = True
+        return True
 
-    if not test_rule_validity(rule):
-        errorandquit("A rule was not valid")
+    def __test_rule__(rule):
+        """
+        This function returns True if the weather at the hours and days
+        specified in the rule has matched the weather specified in the
+        rule over the specified percentage of instances
+        """
+        weathers = []
 
-    # build a list of all required days and hours
-    if "day_list" in rule:
-        days = rule["day_list"]
-    elif "day_min" in rule:
-        if "day_max" in rule:
-            days = range(rule["day_min"], rule["day_max"])
+        if not test_rule_validity(rule):
+            errorandquit("A rule was not valid")
+
+        # build a list of all required days
+        if "day_list" in rule:
+            days = rule["day_list"]
+        elif "day_min" in rule:
+            if "day_max" in rule:
+                days = range(rule["day_min"], rule["day_max"])
+            else:
+                errorandquit("Day range not specified")
+        elif "day" in rule:
+            days = [rule["day"]]
         else:
             errorandquit("Day range not specified")
-    elif "day" in rule:
-        days = [rule["day"]]
-    else:
-        errorandquit("Day range not specified")
 
-    if "hour_list" in rule:
-        hours = rule["hour_list"]
-    elif "hour_min" in rule:
-        if "hour_max" in rule:
-            hours = range(rule["hour_min"], rule["hour_max"])
+        # build a list of all required hours
+        if "hour_list" in rule:
+            hours = rule["hour_list"]
+        elif "hour_min" in rule:
+            if "hour_max" in rule:
+                hours = range(rule["hour_min"], rule["hour_max"])
+            else:
+                errorandquit("Hour range not specified")
+        elif "hour" in rule:
+            hours = [rule["hour"]]
         else:
             errorandquit("Hour range not specified")
-    elif "hour" in rule:
-        hours = [rule["hour"]]
-    else:
-        errorandquit("Hour range not specified")
 
-    # get the weather for the hours and days specified
-    for day in days:
-        for hour in hours:
-            current_weather = get_weather(day, hour)
-            if current_weather:
-                weathers.append(current_weather)
+        # get the weather for the hours and days specified
+        for day in days:
+            for hour in hours:
+                current_weather = get_weather(day, hour)
+                if current_weather:
+                    weathers.append(current_weather)
 
-    # test and convert to list of True and False values
-    weathers = [match_rule(weather, rule) for weather in weathers]
-
-    print(weathers)
-
-    # calculate percentage of True values
-    if amount < 100:
-        num_matches = len([current for current in weathers if current])
-        num_tests = len(weathers)
-        percentage = num_matches / num_tests * 100
-        if percentage >= amount:
-            return True
+        # how often should the rule be the case (default=100)
+        if "amount" in rule:
+            amount = rule["amount"]
         else:
-            return False
-    # are there any non-matching instances?
-    else:
-        if False in weathers:
-            return False
+            amount = 100
+
+        # test and convert to list of True and False values
+        weathers = [match_rule(weather, rule) for weather in weathers]
+
+        # calculate percentage of True values
+        if amount < 100:
+            num_matches = len([current for current in weathers if current])
+            num_tests = len(weathers)
+            percentage = num_matches / num_tests * 100
+            if percentage >= amount:
+                return True
+            else:
+                return False
+        # are there any non-matching instances?
         else:
-            return True
-
-
-def weather_was(rule):
-    """
-    This function returns True if the weather at the hours and days specified
-    in the rule has always matched the weather specified in the rule.
-    """
-
-    if not test_rule_validity(rule):
-        errorandquit("A rule was not valid")
-    return weather_was_sometimes(rule, 100)
+            if False in weathers:
+                return False
+            else:
+                return True
 
 
 # DOING THINGS
@@ -398,24 +398,8 @@ def weather_was(rule):
 if db_new:
     create_db()
 
-# rules
-
-# TODO: improve the defining of rules
-items = []
-morel_results = []
-morel_temperature_rule = {"day_min": 0, "day_max": 7, "min_temp": 10,
-                          "hour_list": ALL_EVENING + ALL_NIGHT}
-morel_rain_rule = {"day_min": 0, "day_max": 7, "precip": 50,
-                   "hour_list": ALL_DAY}
-morel_results.append(weather_was(morel_temperature_rule))
-morel_results.append(weather_was_sometimes(morel_rain_rule, 60))
-morel = {"name": "morel", "results": morel_results}
-items.append(morel)
-
 # check mode and act accordingly
 if args.mode == "update":
     update_weather()
 elif args.mode == "alert":
-    for item in items:
-        if False not in item["results"]:
-            print("forage " + item["name"])
+    pass
