@@ -443,6 +443,13 @@ morel.add_rule(Rule({"day_max": 7, "hour_list": ALL_DAY,
                      "precip": 50, "amount": 60}))
 foraging_items.append(morel)
 
+elderflower = ForagingItem("Elderflower")
+elderflower.add_rule(Rule({"day": 0, "hour_list": ALL_DAY, "precip": 0}))
+elderflower.add_rule(Rule({"day": 0, "hour_min": 5, "cloudcover_max": 15,
+                           "amount": 75}))
+elderflower.add_rule(Rule({"day": 0, "hour_list": ALL_DAY, "temp_min": 10}))
+foraging_items.append(elderflower)
+
 # check mode and act accordingly
 if args.mode == "update":
     update_weather()
