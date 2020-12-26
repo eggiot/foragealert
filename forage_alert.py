@@ -308,22 +308,71 @@ def match_rule(weather, rule):
     return True
 
 
-# ForagingItem class
+# Rule class
+class Rule():
+    def __init__(self, rule_dict):
+        # TODO: test rule validity
+        self.rule = rule_dict
+        try:
+            self.amount = self.rule["amount"]
+            self.rule.pop("amount")
+        except KeyError:
+            self.amount = 100
 
-class ForagingItem():
-    def __init__(self):
-        self.rules = []
-        self.status = True
+        # build a list of all required days
+        if "day_list" in self.rule:
+            self.days = self.rule["day_list"]
+        elif "day_min" in self.rule:
+            if "day_max" in self.rule:
+                self.days = range(self.rule["day_min"], self.rule["day_max"])
+            # if day_min specified but not day max, do the minimum day + a week
+            else:
+                day_min_plus_week = self.rule["day_min"] + 7
+                self.days = list(range(self.rule["day_min"],
+                                       day_min_plus_week))
+        # if day_max but not day_min
+        elif "day_max" in self.rule:
+            # if the maximum day is today, only do today
+            if self.rule["day_max"] == 0:
+                self.days = [0]
+            else:
+                # do all the days from today to the maximum day
+                self.days = list(range(self.rule["day_max"]))
+        elif "day" in self.rule:
+            self.days = [self.rule["day"]]
+        else:
+            self.days = [0, 1]
 
-    def check(self):
-        for rule in self.rules:
-            if not self.__test__rule__(rule):
-                self.status = False
-                return False
-        self.status = True
-        return True
+        # build a list of all required hours
+        if "hour_list" in self.rule:
+            self.hours = self.rule["hour_list"]
+        elif "hour_min" in self.rule:
+            if "hour_max" in self.rule:
+                self.hours = range(self.rule["hour_min"],
+                                   self.rule["hour_max"])
+            # hour_min specified but no hour_max
+            else:
+                # if hour_min is the maximum hour, only have the maximum hour
+                if self.rule["hour_min"] == 23:
+                    self.hours = [23]
+                else:
+                    # all hours from min hour to maximum hour
+                    self.hours = list(range(self.rule["hour_min"], 23))
+        # hour_max specified but no hour_min
+        elif "hour_max" in self.rule:
+            # if hour_max is the minimum hour, only have the minimum hour
+            if self.rule["hour_max"] == 0:
+                self.hours = [0]
+            else:
+                # all hours leading up to max hour
+                self.hours = list(range(self.rule["hour_max"]))
+        elif "hour" in self.rule:
+            self.hours = [self.rule["hour"]]
+        # if no hours are specified, the default is all day (0-23)
+        else:
+            self.hours = list(range(23))
 
-    def __test_rule__(rule):
+    def test(self):
         """
         This function returns True if the weather at the hours and days
         specified in the rule has matched the weather specified in the
@@ -331,57 +380,22 @@ class ForagingItem():
         """
         weathers = []
 
-        if not test_rule_validity(rule):
-            errorandquit("A rule was not valid")
-
-        # build a list of all required days
-        if "day_list" in rule:
-            days = rule["day_list"]
-        elif "day_min" in rule:
-            if "day_max" in rule:
-                days = range(rule["day_min"], rule["day_max"])
-            else:
-                errorandquit("Day range not specified")
-        elif "day" in rule:
-            days = [rule["day"]]
-        else:
-            errorandquit("Day range not specified")
-
-        # build a list of all required hours
-        if "hour_list" in rule:
-            hours = rule["hour_list"]
-        elif "hour_min" in rule:
-            if "hour_max" in rule:
-                hours = range(rule["hour_min"], rule["hour_max"])
-            else:
-                errorandquit("Hour range not specified")
-        elif "hour" in rule:
-            hours = [rule["hour"]]
-        else:
-            errorandquit("Hour range not specified")
-
         # get the weather for the hours and days specified
-        for day in days:
-            for hour in hours:
+        for day in self.days:
+            for hour in self.hours:
                 current_weather = get_weather(day, hour)
                 if current_weather:
                     weathers.append(current_weather)
 
-        # how often should the rule be the case (default=100)
-        if "amount" in rule:
-            amount = rule["amount"]
-        else:
-            amount = 100
-
         # test and convert to list of True and False values
-        weathers = [match_rule(weather, rule) for weather in weathers]
+        weathers = [match_rule(weather, self.rule) for weather in weathers]
 
         # calculate percentage of True values
-        if amount < 100:
+        if self.amount < 100:
             num_matches = len([current for current in weathers if current])
             num_tests = len(weathers)
             percentage = num_matches / num_tests * 100
-            if percentage >= amount:
+            if percentage >= self.amount:
                 return True
             else:
                 return False
@@ -393,13 +407,36 @@ class ForagingItem():
                 return True
 
 
+# ForagingItem class
+class ForagingItem():
+    def __init__(self, name):
+        self.name = name
+        self.rules = []
+        self.status = True
+
+    def check(self):
+        for rule in self.rules:
+            if not rule.test():
+                self.status = False
+                return False
+        self.status = True
+        return True
+
+    def alert(self):
+        if self.check():
+            print("You should forage " + self.name + " right now!")
+
+
 # DOING THINGS
 
 if db_new:
     create_db()
 
+foraging_items = []
+
 # check mode and act accordingly
 if args.mode == "update":
     update_weather()
 elif args.mode == "alert":
-    pass
+    for foraging_item in foraging_items:
+        foraging_item.check()
