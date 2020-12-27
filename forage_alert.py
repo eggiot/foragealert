@@ -184,35 +184,36 @@ def update_weather():
     cursor.close()
 
 
-def get_weather(day, hour):
+def get_weather(days, hours):
     """
     This is the most general-purpose weather api call. It gets the weather on
     the specified day at the specified hour. This is the foundation on which
     the more complex api calls are built. The specified day is relative to the
     current day, with the current day being 0 and the previous day being 1, etc
     """
+    days = "(" + ", ".join([str(day) for day in days]) + ")"
+    hours = "(" + ", ".join([str(hour) for hour in hours]) + ")"
 
-    if test_day_format(day) == RELATIVE_DAY:
-        day = day_relative_to_absolute(day)
-    statement = ["SELECT * FROM weather WHERE day == '", str(day),
-                 "' AND hour == '", str(hour), "'"]
+    statement = ["SELECT * FROM weather WHERE day in ", days,
+                 " AND hour in ", hours]
     statement = "".join(statement)
     cursor = db.cursor()
     cursor.execute(statement)
     data = cursor.fetchall()
     cursor.close()
 
-    try:
-        data = data[0]
-        weather = {"hour": hour, "day": day_absolute_to_relative(day),
-                   "temp": data[3],
-                   "precipitation": data[4], "humidity": data[5],
-                   "windspeed": data[6], "windbearing": data[7],
-                   "windgust": data[8], "pressure": data[9],
-                   "cloudcover": data[10], "visibility": data[11]}
-        return weather
-    except IndexError:
-        return None
+    weathers = []
+    if len(data) > 0:
+        for weather in data:
+            weather = {"hour": weather[1],
+                       "day": day_absolute_to_relative(weather[2]),
+                       "temp": weather[3],
+                       "precipitation": weather[4], "humidity": weather[5],
+                       "windspeed": weather[6], "windbearing": weather[7],
+                       "windgust": weather[8], "pressure": weather[9],
+                       "cloudcover": weather[10], "visibility": weather[11]}
+            weathers.append(weather)
+    return weathers
 
 
 # MATCHING FUNCTIONS
@@ -381,14 +382,8 @@ class Rule():
         specified in the rule has matched the weather specified in the
         rule over the specified percentage of instances
         """
-        weathers = []
-
         # get the weather for the hours and days specified
-        for day in self.days:
-            for hour in self.hours:
-                current_weather = get_weather(day, hour)
-                if current_weather:
-                    weathers.append(current_weather)
+        weathers = get_weather(self.days, self.hours)
 
         # test and convert to list of True and False values
         weathers = [match_rule(weather, self.rule) for weather in weathers]
