@@ -449,24 +449,22 @@ def xml_to_foraging_items(xml):
     for raw_item in raw_items:
         current_item = ForagingItem(raw_item)
         current_item_rules = raw_items[raw_item]
-        for rule in current_item_rules:
-            # assumes that each rule has a unique name within the item
-            rule_dict = current_item_rules[rule]
+        for rule in current_item_rules.values():
 
             # convert lists to python list
-            for item in rule_dict:
+            for item in rule:
                 # do some error handling for list definitions
                 if "_list" in item:
-                    item_key = rule_dict[item]
+                    item_value = rule[item]
                     try:
-                        rule_dict[item] = list(eval(item_key))
+                        rule[item] = list(eval(item_value))
                     except TypeError:
-                        rule_dict[item] = eval("[" + rule_dict[item] + "]")
+                        rule[item] = eval("[" + item_value + "]")
                     except Exception:
                         error_message = "List defined incorrectly in item " +\
                                         item + " in rule " + rule
                         errorandquit(error_message)
-            current_item.add_rule(Rule(rule_dict))
+            current_item.add_rule(Rule(rule))
         foraging_items.append(current_item)
     return foraging_items
 
