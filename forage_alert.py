@@ -139,10 +139,11 @@ def create_db():
     cursor = db.cursor()
 
     cursor.execute("CREATE TABLE weather(id integer PRIMARY KEY, hour integer,\
-                    day date, temperature decimal, precip decimal,\
-                    humidity decimal, windspeed decimal, windbearing decimal,\
+                    day date, temp decimal, apptemp decimal,\
+                    precipint decimal, precipprob decimal, humidity decimal,\
+                    dewpoint decimal, windspeed decimal, windbearing decimal,\
                     windgust decimal, pressure decimal, cloudcover decimal,\
-                    visibility decimal)")
+                    uvindex decimal, visibility decimal)")
 
     cursor.close()
 
@@ -157,21 +158,25 @@ def update_weather():
         current.append(CURRENT_HOUR)
         current.append(day_relative_to_absolute(CURRENT_DAY))
         current.append(raw["temperature"])
+        current.append(raw["apparentTemperature"])
+        current.append(raw["precipIntensity"])
         current.append(raw["precipProbability"] * 100)
         current.append(raw["humidity"] * 100)
+        current.append(raw["dewPoint"])
         current.append(raw["windSpeed"])
         current.append(raw["windBearing"])
         current.append(raw["windGust"])
         current.append(raw["pressure"])
         current.append(raw["cloudCover"] * 100)
+        current.append(raw["uvIndex"])
         current.append(raw["visibility"])
 
     current = ["'" + str(value) + "'" for value in current]
     current = ", ".join(current)
 
-    columns = ["hour", "day", "temperature", "precip", "humidity", "windspeed",
-               "windbearing", "windgust", "pressure", "cloudcover",
-               "visibility"]
+    columns = ["hour", "day", "temp", "apptemp", "precipint", "precipprob",
+               "humidity", "dewpoint", "windspeed", "windbearing",
+               "windgust", "pressure", "cloudcover", "uvindex", "visibility"]
 
     columns = ["'" + value + "'" for value in columns]
     columns = ", ".join(columns)
@@ -207,11 +212,19 @@ def get_weather(days, hours):
         for weather in data:
             weather = {"hour": weather[1],
                        "day": day_absolute_to_relative(weather[2]),
-                       "temp": weather[3],
-                       "precipitation": weather[4], "humidity": weather[5],
-                       "windspeed": weather[6], "windbearing": weather[7],
-                       "windgust": weather[8], "pressure": weather[9],
-                       "cloudcover": weather[10], "visibility": weather[11]}
+                       "temperature": weather[3],
+                       "apparenttemperature": weather[4],
+                       "precipitationintensity": weather[5],
+                       "precipitationprobability": weather[6],
+                       "humidity": weather[7],
+                       "dewpoint": weather[8],
+                       "windspeed": weather[9],
+                       "windbearing": weather[10],
+                       "windgust": weather[11],
+                       "pressure": weather[12],
+                       "cloudcover": weather[13],
+                       "uvindex": weather[14],
+                       "visibility": weather[15]}
             weathers.append(weather)
     return weathers
 
