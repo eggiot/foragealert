@@ -2,7 +2,7 @@
     <temp_rule>
         <day_max>7</day_max>
         <hour_max>8</hour_max>
-        <temp_min>10</temp_min>
+        <temperature_min>10</temperature_min>>
     </temp_rule>>
     <rain_rule>
         <day_max>7</day_max>
@@ -27,6 +27,6 @@
     <temp_rule>
         <day>0</day>
         <hour_max>23</hour_max>
-        <temp_min>10</temp_min>
+        <temperature_min>10</temperature_min>>
     </temp_rule>>
 </elderflower>
