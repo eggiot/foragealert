@@ -470,14 +470,14 @@ def xml_to_foraging_items(xml):
 if db_new:
     create_db()
 
-with open(args.items, 'r') as file:
-    data = file.read()
-
-foraging_items = xml_to_foraging_items(data)
-
 # check mode and act accordingly
 if args.mode == "update":
     update_weather()
 elif args.mode == "alert":
+    with open(args.items, 'r') as file:
+        data = file.read()
+
+    foraging_items = xml_to_foraging_items(data)
+
     for foraging_item in foraging_items:
         foraging_item.check()
