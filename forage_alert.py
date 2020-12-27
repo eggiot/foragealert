@@ -99,15 +99,6 @@ def day_absolute_to_relative(absolute):
     return abs((today - date).days)
 
 
-def test_rule_validity(rule):
-    try:
-        rule["hours"]
-        rule["days"]
-        return True
-    except KeyError:
-        return False
-
-
 def test_day_format(day):
     """
     Tests input to see if it's a relative day, an absolute day or neither
