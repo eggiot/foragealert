@@ -135,12 +135,15 @@ def create_db():
     """
     cursor = db.cursor()
 
-    cursor.execute("CREATE TABLE weather(id integer PRIMARY KEY, hour integer,\
-                    day date, temp decimal, apptemp decimal,\
-                    precipint decimal, precipprob decimal, humidity decimal,\
-                    dewpoint decimal, windspeed decimal, windbearing decimal,\
-                    windgust decimal, pressure decimal, cloudcover decimal,\
-                    uvindex decimal, visibility decimal)")
+    columns = ["id integer PRIMARY KEY", "hour integer", "day date",
+               "temp decimal", "apptemp decimal", "precipint decimal",
+               "precipprob decimal", "humidity decimal", "dewpoint decimal",
+               "windspeed decimal", "windbearing decimal", "windgust decimal",
+               "pressure decimal", "cloudcover decimal", "uvindex decimal",
+               "visibility decimal"]
+    columns = format_list_for_db(columns)
+
+    cursor.execute("CREATE TABLE weather" + columns)
 
     cursor.close()
 
