@@ -8,6 +8,7 @@ import re
 import sys
 from darksky import forecast
 from os.path import expanduser
+import xmltodict
 
 # get Dark Sky API key
 ds_attribution = "Powered by Dark Sky: https://darksky.net/poweredby/."
@@ -21,6 +22,8 @@ parser.add_argument("longitude", help="Longitude",
                     type=float)
 parser.add_argument("-m", "--mode",
                     help="One of 'alert' or 'update'")
+parser.add_argument("-i", "--items",
+                    help="XML file containing item definitions")
 # version number and Dark Sky attribution
 parser.add_argument('-v', '--version', action='version',
                     version="%(prog)s 1.0. " + ds_attribution,
@@ -430,25 +433,47 @@ class ForagingItem():
             print("You should forage " + self.name + " right now!")
 
 
+def xml_to_foraging_items(xml):
+    foraging_items = []
+    # save xml data as ordered dict. item name as key, dict of rules as value
+    raw_items = xmltodict.parse(xml)
+
+    # convert raw dicts into foraging item with attached rules and add to
+    # foraging_items list
+    for raw_item in raw_items:
+        current_item = ForagingItem(raw_item)
+        current_item_rules = raw_items[raw_item]
+        for rule in current_item_rules:
+            # assumes that each rule has a unique name within the item
+            rule_dict = current_item_rules[rule]
+
+            # convert lists to python list
+            for item in rule_dict:
+                # do some error handling for list definitions
+                if "_list" in item:
+                    item_key = rule_dict[item]
+                    try:
+                        rule_dict[item] = list(eval(item_key))
+                    except TypeError:
+                        rule_dict[item] = eval("[" + rule_dict[item] + "]")
+                    except Exception:
+                        error_message = "List defined incorrectly in item " +\
+                                        item + " in rule " + rule
+                        errorandquit(error_message)
+            current_item.add_rule(Rule(rule_dict))
+        foraging_items.append(current_item)
+    return foraging_items
+
+
 # DOING THINGS
 
 if db_new:
     create_db()
 
-foraging_items = []
+with open(args.items, 'r') as file:
+    data = file.read()
 
-morel = ForagingItem("Morel")
-morel.add_rule(Rule({"day_max": 7, "hour_max": 8, "temp_min": 10}))
-morel.add_rule(Rule({"day_max": 7, "hour_list": ALL_DAY,
-                     "precip": 50, "amount": 60}))
-foraging_items.append(morel)
-
-elderflower = ForagingItem("Elderflower")
-elderflower.add_rule(Rule({"day": 0, "hour_list": ALL_DAY, "precip": 0}))
-elderflower.add_rule(Rule({"day": 0, "hour_min": 5, "cloudcover_max": 15,
-                           "amount": 75}))
-elderflower.add_rule(Rule({"day": 0, "hour_list": ALL_DAY, "temp_min": 10}))
-foraging_items.append(elderflower)
+foraging_items = xml_to_foraging_items(data)
 
 # check mode and act accordingly
 if args.mode == "update":
