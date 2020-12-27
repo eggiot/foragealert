@@ -131,6 +131,12 @@ def day_range(days):
     return list(range(days))
 
 
+def format_list_for_db(values):
+    db_values = ["'" + str(value) + "'" for value in values]
+    db_values = "(" + ", ".join(db_values) + ")"
+    return db_values
+
+
 # DATABASE FUNCTIONS
 def create_db():
     """
@@ -171,17 +177,15 @@ def update_weather():
         current.append(raw["uvIndex"])
         current.append(raw["visibility"])
 
-    current = ["'" + str(value) + "'" for value in current]
-    current = ", ".join(current)
+    current = format_list_for_db(current)
 
     columns = ["hour", "day", "temp", "apptemp", "precipint", "precipprob",
                "humidity", "dewpoint", "windspeed", "windbearing",
                "windgust", "pressure", "cloudcover", "uvindex", "visibility"]
 
-    columns = ["'" + value + "'" for value in columns]
-    columns = ", ".join(columns)
+    columns = format_list_for_db(columns)
 
-    statement = ["INSERT INTO weather (", columns, ") VALUES(", current, ")"]
+    statement = ["INSERT INTO weather ", columns, " VALUES", current]
     statement = "".join(statement)
 
     cursor = db.cursor()
@@ -196,8 +200,8 @@ def get_weather(days, hours):
     the more complex api calls are built. The specified day is relative to the
     current day, with the current day being 0 and the previous day being 1, etc
     """
-    days = "(" + ", ".join([str(day) for day in days]) + ")"
-    hours = "(" + ", ".join([str(hour) for hour in hours]) + ")"
+    days = format_list_for_db(days)
+    hours = format_list_for_db(hours)
 
     statement = ["SELECT * FROM weather WHERE day in ", days,
                  " AND hour in ", hours]
