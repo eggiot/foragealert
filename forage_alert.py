@@ -372,11 +372,9 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
 # Rule class
 class Rule():
     def __init__(self, rule_dict):
-        # TODO: test rule validity
         self.rule = rule_dict
-        self.hours = build_range_list(self.rule, "hour", 0, 23, 23,
-                                      CURRENT_HOUR)
-        self.days = build_range_list(self.rule, "day", 0, 100, 7, 0)
+        self.hours = build_range_list(self.rule, "hour", 0, 23, 23, [])
+        self.days = build_range_list(self.rule, "day", 0, 100, 7, [])
         self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
 
         # set amount
@@ -388,31 +386,40 @@ class Rule():
 
     def test(self):
         """
-        This function returns True if the weather at the hours and days
+        If a picking rule, returns True if the current time is within the
+        picking hours.
+
+        If a weather rule, returns True if the weather at the hours and days
         specified in the rule has matched the weather specified in the
         rule over the specified percentage of instances
         """
-        # get the weather for the hours and days specified
-        weathers = get_weather(self.days, self.hours)
-
-        # test and convert to list of True and False values
-        weathers = [match_rule(weather, self.rule) for weather in weathers]
-
-        # calculate percentage of True values
-        if self.amount < 100:
-            num_matches = len([current for current in weathers if current])
-            num_tests = len(weathers)
-            percentage = num_matches / num_tests * 100
-            if percentage >= self.amount:
+        if self.pick_hours:
+            if CURRENT_HOUR in self.pick_hours:
                 return True
             else:
                 return False
-        # are there any non-matching instances?
         else:
-            if False in weathers:
-                return False
+            # get the weather for the hours and days specified
+            weathers = get_weather(self.days, self.hours)
+
+            # test and convert to list of True and False values
+            weathers = [match_rule(weather, self.rule) for weather in weathers]
+
+            # calculate percentage of True values
+            if self.amount < 100:
+                num_matches = len([current for current in weathers if current])
+                num_tests = len(weathers)
+                percentage = num_matches / num_tests * 100
+                if percentage >= self.amount:
+                    return True
+                else:
+                    return False
+            # are there any non-matching instances?
             else:
-                return True
+                if False in weathers:
+                    return False
+                else:
+                    return True
 
 
 # ForagingItem class
