@@ -345,7 +345,8 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
         range_list = rule_dict[list_key]
     elif min_key in rule_dict:
         if max_key in rule_dict:
-            range_list = list(range(rule_dict[min_key], rule_dict[max_key]))
+            range_list = list(range(rule_dict[min_key],
+                                    rule_dict[max_key] + 1))
         else:
             max_range = rule_dict[min_key] + range_value
             if max_range > max_value:
@@ -355,7 +356,8 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
         if rule_dict[max_key] == min_value:
             range_list = [min_value]
         else:
-            range_list = list(range(rule_dict[min_value], rule_dict[max_key]))
+            range_list = list(range(min_value,
+                                    rule_dict[max_key] + 1))
     elif key in rule_dict:
         range_list = [rule_dict[key]]
     else:
