@@ -323,69 +323,66 @@ def match_rule(weather, rule):
     return True
 
 
+def build_range_list(rule_dict, key, min_value, range_value, max_value,
+                     default_value):
+    """
+    This function allows for the definition of a default range for an
+    incompletely defined range in a rule dictionary. It will check
+    rule_dict for key + suffixes. it will return a list containing the values
+    of that default range within the constraints defined within rule_dict.
+
+    min_value:  the minimum possible value if key_min is not defined
+    range_value: the number of values above key_min that are allowed when
+        key_max is not defined.
+    max_value: the range can never go above this when key_max is not defined
+    default_valueL the value if nothing is defined
+    """
+    range_list = []
+    list_key = key + "_list"
+    min_key = key + "_min"
+    max_key = key + "_max"
+    if list_key in rule_dict:
+        range_list = rule_dict[list_key]
+    elif min_key in rule_dict:
+        if max_key in rule_dict:
+            range_list = list(range(rule_dict[min_key], rule_dict[max_key]))
+        else:
+            max_range = rule_dict[min_key] + range_value
+            if max_range > max_value:
+                max_range = max_value
+            range_list = list(range(rule_dict[min_key], max_range))
+    elif max_key in rule_dict:
+        if rule_dict[max_key] == min_value:
+            range_list = [min_value]
+        else:
+            range_list = list(range(rule_dict[min_value], rule_dict[max_key]))
+    elif key in rule_dict:
+        range_list = [rule_dict[key]]
+    else:
+        if type(default_value) == list:
+            range_list = default_value
+        else:
+            range_list = [default_value]
+
+    return range_list
+
+
 # Rule class
 class Rule():
     def __init__(self, rule_dict):
         # TODO: test rule validity
         self.rule = rule_dict
-        try:
+        self.hours = build_range_list(self.rule, "hour", 0, 23, 23,
+                                      CURRENT_HOUR)
+        self.days = build_range_list(self.rule, "day", 0, 100, 7, 0)
+        self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
+
+        # set amount
+        if "amount" in self.rule.keys():
             self.amount = self.rule["amount"]
             self.rule.pop("amount")
-        except KeyError:
+        else:
             self.amount = 100
-
-        # build a list of all required days
-        if "day_list" in self.rule:
-            self.days = self.rule["day_list"]
-        elif "day_min" in self.rule:
-            if "day_max" in self.rule:
-                self.days = range(self.rule["day_min"], self.rule["day_max"])
-            # if day_min specified but not day max, do the minimum day + a week
-            else:
-                day_min_plus_week = self.rule["day_min"] + 7
-                self.days = list(range(self.rule["day_min"],
-                                       day_min_plus_week))
-        # if day_max but not day_min
-        elif "day_max" in self.rule:
-            # if the maximum day is today, only do today
-            if self.rule["day_max"] == 0:
-                self.days = [0]
-            else:
-                # do all the days from today to the maximum day
-                self.days = list(range(self.rule["day_max"]))
-        elif "day" in self.rule:
-            self.days = [self.rule["day"]]
-        else:
-            self.days = [0, 1]
-
-        # build a list of all required hours
-        if "hour_list" in self.rule:
-            self.hours = self.rule["hour_list"]
-        elif "hour_min" in self.rule:
-            if "hour_max" in self.rule:
-                self.hours = range(self.rule["hour_min"],
-                                   self.rule["hour_max"])
-            # hour_min specified but no hour_max
-            else:
-                # if hour_min is the maximum hour, only have the maximum hour
-                if self.rule["hour_min"] == 23:
-                    self.hours = [23]
-                else:
-                    # all hours from min hour to maximum hour
-                    self.hours = list(range(self.rule["hour_min"], 23))
-        # hour_max specified but no hour_min
-        elif "hour_max" in self.rule:
-            # if hour_max is the minimum hour, only have the minimum hour
-            if self.rule["hour_max"] == 0:
-                self.hours = [0]
-            else:
-                # all hours leading up to max hour
-                self.hours = list(range(self.rule["hour_max"]))
-        elif "hour" in self.rule:
-            self.hours = [self.rule["hour"]]
-        # if no hours are specified, the default is all day (0-23)
-        else:
-            self.hours = list(range(23))
 
     def test(self):
         """
