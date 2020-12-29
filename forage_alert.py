@@ -341,31 +341,39 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
     list_key = key + "_list"
     min_key = key + "_min"
     max_key = key + "_max"
+
+    # the range list is just the provided list
     if list_key in rule_dict:
         range_list = rule_dict[list_key]
+
     elif min_key in rule_dict:
+        # if a full range is defined using _min and _max, just return the range
         if max_key in rule_dict:
             range_list = list(range(rule_dict[min_key],
                                     rule_dict[max_key] + 1))
+
+        # if lower bounded, do the default range on top of lower bound
         else:
             max_range = rule_dict[min_key] + range_value
             if max_range > max_value:
                 max_range = max_value
             range_list = list(range(rule_dict[min_key], max_range))
+    # if upper bounded, get all values from min value to upper bound
     elif max_key in rule_dict:
         if rule_dict[max_key] == min_value:
             range_list = [min_value]
         else:
             range_list = list(range(min_value,
                                     rule_dict[max_key] + 1))
+    # single value defined
     elif key in rule_dict:
         range_list = [rule_dict[key]]
+    # nothing defined so return default value
     else:
         if type(default_value) == list:
             range_list = default_value
         else:
             range_list = [default_value]
-
     return range_list
 
 
