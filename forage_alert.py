@@ -399,7 +399,11 @@ class Rule():
         rule over the specified percentage of instances
         """
         if self.pick_hours:
-            if CURRENT_HOUR in self.pick_hours:
+            pick_now = CURRENT_HOUR in self.pick_hours
+            pick_today = True in [CURRENT_HOUR < h for h in self.pick_hours]
+            if pick_now:
+                return True
+            elif pick_today:
                 return True
             else:
                 return False
