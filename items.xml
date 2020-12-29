@@ -7,7 +7,7 @@
     <rain_rule>
         <day_max>7</day_max>
         <hour_max>23</hour_max>
-        <precipitation_min>50</precipitation_min>
+        <precipitationprobability_min>50</precipitationprobability_min>>
         <amount>60</amount>
     </rain_rule>>
 </morel>
@@ -16,7 +16,7 @@
     <dry_rule>
         <day>0</day>
         <hour_max>23</hour_max>
-        <precipitation>0</precipitation>
+        <precipitationprobability>0</precipitationprobability>>
     </dry_rule>>
     <clear_rule>
         <day>0</day>
