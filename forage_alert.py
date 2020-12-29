@@ -400,7 +400,7 @@ class Rule():
         """
         if self.pick_hours:
             pick_now = CURRENT_HOUR in self.pick_hours
-            pick_today = True in [CURRENT_HOUR < h for h in self.pick_hours]
+            pick_today = any(hour > CURRENT_HOUR for hour in self.pick_hours)
             if pick_now:
                 return True
             elif pick_today:
@@ -411,8 +411,7 @@ class Rule():
             # get the weather for the hours and days specified
             weathers = get_weather(self.days, self.hours)
 
-            # test and convert to list of True and False values
-            weathers = [match_rule(weather, self.rule) for weather in weathers]
+            weathers = all(match_rule(w, self.rule) for w in weathers)
 
             # calculate percentage of True values
             if self.amount < 100:
