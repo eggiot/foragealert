@@ -377,6 +377,11 @@ class Rule():
         self.days = build_range_list(self.rule, "day", 0, 100, 7, [])
         self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
 
+        if self.pick_hours and (self.hours or self.days):
+            message = "Cannot define pick hours alongside hours or days in the\
+                       same rule."
+            raise Exception(message)
+
         # set amount
         if "amount" in self.rule.keys():
             self.amount = self.rule["amount"]
