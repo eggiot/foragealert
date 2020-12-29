@@ -4,7 +4,7 @@ Many plants and fungi have ideal foraging conditions, where the weather has to b
 
 ## Defining rules
 
-Rules are defined in an XML file. Valid variables are "day", "hour", "temp", "precip", "humidity", "windspeed", "windbearing", "windgust", "pressure", "cloudcover", and "visibility". Ranges can be specified by adding the suffixies "_min", "_max", or "_list" to these variable names
+Rules are defined in an XML file. Valid variables are "day", "hour", "temperature", "apparenttemperature" "precipitationintensity", "precipitationprobability" "humidity", "dewpoint", "windspeed", "windbearing", "windgust", "pressure", "cloudcover", "uvindex" and "visibility". Ranges can be specified by adding the suffixies "_min", "_max", or "_list" to these variable names
 
 ## Running
 
