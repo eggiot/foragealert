@@ -35,6 +35,7 @@ location_request = args.latitude, args.longitude
 # global variables
 CURRENT_DAY = 0
 CURRENT_HOUR = datetime.datetime.now().hour
+CURRENT_MONTH = datetime.datetime.now().month
 # hour lists
 ALL_DAY = list(range(24))
 ALL_NIGHT = list(range(7))
@@ -384,9 +385,14 @@ class Rule():
         self.hours = build_range_list(self.rule, "hour", 0, 23, 23, [])
         self.days = build_range_list(self.rule, "day", 0, 100, 7, [])
         self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
+        self.months = build_range_list(self.rule, "month", 0, 12, 12, [])
 
-        if self.pick_hours and (self.hours or self.days):
-            message = "Cannot define pick hours alongside hours or days in the\
+        if self.pick_hours and (self.hours or self.days or self.months):
+            message = "Cannot define pick hours alongside hours, days, or\
+                       months in the same rule."
+            raise Exception(message)
+        elif self.months and (self.hours or self.days):
+            message = "Cannot define months alongside hours or days in the\
                        same rule."
             raise Exception(message)
 
@@ -412,6 +418,11 @@ class Rule():
             if pick_now:
                 return True
             elif pick_today:
+                return True
+            else:
+                return False
+        elif self.months:
+            if CURRENT_MONTH in self.months:
                 return True
             else:
                 return False
