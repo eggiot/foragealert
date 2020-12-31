@@ -94,7 +94,6 @@ def create_db():
     """ Create the database.
     """
     cursor = db.cursor()
-
     columns = ["id integer PRIMARY KEY", "hour integer", "day date",
                "temp decimal", "apptemp decimal", "precipint decimal",
                "precipprob decimal", "humidity decimal", "dewpoint decimal",
@@ -102,9 +101,7 @@ def create_db():
                "pressure decimal", "cloudcover decimal", "uvindex decimal",
                "visibility decimal"]
     columns = format_list_for_db(columns)
-
     cursor.execute("CREATE TABLE weather" + columns)
-
     cursor.close()
 
 
@@ -130,17 +127,13 @@ def update_weather():
         current.append(raw["cloudCover"] * 100)
         current.append(raw["uvIndex"])
         current.append(raw["visibility"])
-
     current = format_list_for_db(current)
 
     columns = ["hour", "day", "temp", "apptemp", "precipint", "precipprob",
                "humidity", "dewpoint", "windspeed", "windbearing",
                "windgust", "pressure", "cloudcover", "uvindex", "visibility"]
-
     columns = format_list_for_db(columns)
-
     statement = f"INSERT INTO WEATHER {columns} VALUES {current}"
-
     cursor = db.cursor()
     cursor.execute(statement)
     cursor.close()
@@ -156,7 +149,6 @@ def get_weather(days, hours):
     """
     days = format_list_for_db(days)
     hours = format_list_for_db(hours)
-
     sql = f"SELECT * FROM weather WHERE day in {days} AND HOUR in {hours}"
     cursor = db.cursor()
     cursor.execute(sql)
@@ -277,13 +269,11 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
     # the range list is just the provided list
     if list_key in rule_dict:
         range_list = rule_dict[list_key]
-
     elif min_key in rule_dict:
         # if a full range is defined using _min and _max, just return the range
         if max_key in rule_dict:
             range_list = list(range(rule_dict[min_key],
                                     rule_dict[max_key] + 1))
-
         # if lower bounded, do the default range on top of lower bound
         else:
             max_range = rule_dict[min_key] + range_value
@@ -326,7 +316,6 @@ class Rule():
             message = "Cannot define months alongside hours or days in the\
                        same rule."
             raise Exception(message)
-
         # set amount
         if "amount" in self.rule.keys():
             self.amount = self.rule["amount"]
@@ -362,7 +351,6 @@ class Rule():
         else:
             # get the weather for the hours and days specified
             weathers = get_weather(self.days, self.hours)
-
             weathers = all(match_rule(w, self.rule) for w in weathers)
 
             # calculate percentage of True values
