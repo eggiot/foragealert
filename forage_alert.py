@@ -10,6 +10,7 @@ from darksky import forecast
 from os.path import expanduser
 import xmltodict
 from matching import match_rule
+from matching import build_range_list
 
 # get Dark Sky API key
 ds_attribution = "Powered by Dark Sky: https://darksky.net/poweredby/."
@@ -176,54 +177,6 @@ def get_weather(days, hours):
                        "visibility": weather[15]}
             weathers.append(weather)
     return weathers
-
-def build_range_list(rule_dict, key, min_value, range_value, max_value,
-                     default_value):
-    """Defines a default range for an incompletely defined range in a rule.
-
-    This function allows for the definition of a default range for an
-    incompletely defined range in a rule dictionary. It will check
-    rule_dict for key + suffixes. it will return a list containing the values
-    of that default range within the constraints defined within rule_dict.
-
-    min_value:  the minimum possible value if key_min is not defined
-    range_value: the number of values above key_min that are allowed when
-        key_max is not defined.
-    max_value: the range can never go above this when key_max is not defined
-    default_valueL the value if nothing is defined
-    """
-    list_key = key + "_list"
-    min_key = key + "_min"
-    max_key = key + "_max"
-
-    # the range list is just the provided list
-    if list_key in rule_dict:
-        return rule_dict[list_key]
-    elif min_key in rule_dict:
-        # if a full range is defined using _min and _max, just return the range
-        if max_key in rule_dict:
-            return list(range(rule_dict[min_key], rule_dict[max_key] + 1))
-        # if lower bounded, do the default range on top of lower bound
-        else:
-            max_range = rule_dict[min_key] + range_value
-            if max_range > max_value:
-                max_range = max_value
-            return list(range(rule_dict[min_key], max_range))
-    # if upper bounded, get all values from min value to upper bound
-    elif max_key in rule_dict:
-        if rule_dict[max_key] == min_value:
-            return [min_value]
-        else:
-            return list(range(min_value, rule_dict[max_key] + 1))
-    # single value defined
-    elif key in rule_dict:
-        return [rule_dict[key]]
-    # nothing defined so return default value
-    else:
-        if type(default_value) == list:
-            return default_value
-        else:
-            return [default_value]
 
 
 # Rule class
