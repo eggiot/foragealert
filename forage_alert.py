@@ -193,6 +193,7 @@ def xml_to_foraging_items(xml):
         foraging_items.append(current_item)
     return foraging_items
 
+
 # check mode and act accordingly
 if args.mode == "update":
     db.update_weather()
