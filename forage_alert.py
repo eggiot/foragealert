@@ -85,8 +85,8 @@ def is_absolute_day(day):
 def format_list_for_db(values):
     """Converts a python list to a sqlite list string
     """
-    db_values = ", ".join(["'" + str(value) + "'" for value in values])
-    return "(" + db_values + ")"
+    db_values = ", ".join([f"'{str(value)}'" for value in values])
+    return f"({db_values})"
 
 
 # DATABASE FUNCTIONS
@@ -139,8 +139,7 @@ def update_weather():
 
     columns = format_list_for_db(columns)
 
-    statement = ["INSERT INTO weather ", columns, " VALUES", current]
-    statement = "".join(statement)
+    statement = f"INSERT INTO WEATHER {columns} VALUES {current}"
 
     cursor = db.cursor()
     cursor.execute(statement)
@@ -158,11 +157,9 @@ def get_weather(days, hours):
     days = format_list_for_db(days)
     hours = format_list_for_db(hours)
 
-    statement = ["SELECT * FROM weather WHERE day in ", days,
-                 " AND hour in ", hours]
-    statement = "".join(statement)
+    sql = f"SELECT * FROM weather WHERE day in {days} AND HOUR in {hours}"
     cursor = db.cursor()
-    cursor.execute(statement)
+    cursor.execute(sql)
     data = cursor.fetchall()
     cursor.close()
 
