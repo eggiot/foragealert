@@ -85,9 +85,8 @@ def is_absolute_day(day):
 def format_list_for_db(values):
     """Converts a python list to a sqlite list string
     """
-    db_values = ["'" + str(value) + "'" for value in values]
-    db_values = "(" + ", ".join(db_values) + ")"
-    return db_values
+    db_values = ", ".join(["'" + str(value) + "'" for value in values])
+    return "(" + db_values + ")"
 
 
 # DATABASE FUNCTIONS
@@ -214,60 +213,39 @@ def match_rule_value(weather, rule, value):
     and / or "value_max" or defines an absolute value using the key "value",
     or defines a number of absolute values using the key "value_list".
     """
-    UPPER_BOUNDED = 0
-    LOWER_BOUNDED = 1
-    BOTH_BOUNDED = 2
-    SINGLE_VALUE = 3
-    LIST_VALUE = 4
-
     min_key = value + "_min"
     max_key = value + "_max"
     list_key = value + "_list"
 
-    # how is the value defined within the rule?
-    if value in rule:
-        range_type = SINGLE_VALUE
-    elif list_key in rule:
-        range_type = LIST_VALUE
-    elif max_key in rule:
-        if min_key in rule:
-            range_type = BOTH_BOUNDED
-        else:
-            range_type = UPPER_BOUNDED
-    elif min_key in rule:
-        range_type = LOWER_BOUNDED
-        # the value doesn't matter so we match
-        return True
-    else:
-        # doesn't matter so return True
-        return True
-
     # does the weather value match the rule?
-    if range_type == SINGLE_VALUE:
+    if value in rule:
         if weather[value] == rule[value]:
             return True
         else:
             return False
-    elif range_type == LIST_VALUE:
+    elif list_key in rule:
         if weather[value] in rule[list_key]:
             return True
         else:
             return False
-    elif range_type == LOWER_BOUNDED:
+    elif min_key in rule and max_key in rule:
+        if rule[min_key] <= weather[value] <= rule[max_key]:
+            return True
+        else:
+            return False
+    elif min_key in rule:
         if weather[value] >= rule[min_key]:
             return True
         else:
             return False
-    elif range_type == UPPER_BOUNDED:
+    elif max_key in rule:
         if weather[value] <= rule[max_key]:
             return True
         else:
             return False
-    elif range_type == BOTH_BOUNDED:
-        if weather[value] <= rule[max_key] and weather[value] >= rule[min_key]:
-            return True
-        else:
-            return False
+    # doesn't matter, so returns True
+    else:
+        return True
 
 
 def match_rule(weather, rule):
