@@ -40,25 +40,22 @@ db = sqlite3.connect(db_file_path, detect_types=sqlite3_detect_types)
 
 # HELPER FUNCTIONS
 def matches_regex(regex, text):
-    """
-    Returns true only if the whole of the text matches the regex
+    """ Returns true only if the whole of the text matches the regex
     """
     match = re.match(regex, text)
     return match.span() == (0, len(text))
 
 
 def errorandquit(error_message):
+    """ Print help message plus an error message
     """
-    Print help message plus an error message"""
     parser.print_help(sys.stderr)
     sys.stderr.write(sys.argv[0] + ": " + error_message + "\n")
     sys.exit(1)
 
 
 def day_relative_to_absolute(relative):
-    """
-    Converts a relative day (0 being today, 1 being yesterday, etc) to an
-    absolute day(in the format YYYY-MM-DD)
+    """ Converts a relative day to an absolute date string
     """
     today = datetime.datetime.today()
     delta = datetime.timedelta(days=relative)
@@ -66,8 +63,7 @@ def day_relative_to_absolute(relative):
 
 
 def day_absolute_to_relative(absolute):
-    """
-    Converts an absolute date (format YYYY-MM-DD into a relative day)
+    """ Converts an absolute date string to relative day
     """
     today = datetime.datetime.today()
     date = datetime.datetime.strptime(absolute, "%Y-%m-%d")
@@ -75,14 +71,20 @@ def day_absolute_to_relative(absolute):
 
 
 def is_relative_day(day):
+    """Tests if a day is a relative day
+    """
     return type(day) == int
 
 
 def is_absolute_day(day):
+    """Tests if a day is an absolute day
+    """
     return matches_regex("[0-9]+-[0-9]+-[0-9]+", day)
 
 
 def format_list_for_db(values):
+    """Converts a python list to a sqlite list string
+    """
     db_values = ["'" + str(value) + "'" for value in values]
     db_values = "(" + ", ".join(db_values) + ")"
     return db_values
@@ -90,8 +92,7 @@ def format_list_for_db(values):
 
 # DATABASE FUNCTIONS
 def create_db():
-    """
-    Create the database. To be used if the database has not yet been created
+    """ Create the database.
     """
     cursor = db.cursor()
 
@@ -109,8 +110,7 @@ def create_db():
 
 
 def update_weather():
-    """
-    This function gets the current weather and adds it to our weather database
+    """Gets the current weather and adds it to our weather database
     """
     current = []
     current_day = 0
@@ -149,7 +149,8 @@ def update_weather():
 
 
 def get_weather(days, hours):
-    """
+    """ Gets the weather on the specified days and hours.
+
     This is the most general-purpose weather api call. It gets the weather on
     the specified day at the specified hour. This is the foundation on which
     the more complex api calls are built. The specified day is relative to the
@@ -201,7 +202,8 @@ def strip_match_keys(match_key):
 
 
 def match_rule_value(weather, rule, value):
-    """
+    """ Checks a value in a weather against the range in a rule
+
     This function checks to see if the value in weather matches the value or
     falls between the value range in rule.
 
@@ -269,9 +271,9 @@ def match_rule_value(weather, rule, value):
 
 
 def match_rule(weather, rule):
-    """
-    This function matches weather against the rule. If the fields
-    specified in weather match those same fields in rule, it
+    """ This function matches weather against a rule.
+
+    If the fields specified in weather match those same fields in rule, it
     returns True, otherwise False
     """
     for key in weather:
@@ -286,7 +288,8 @@ def match_rule(weather, rule):
 
 def build_range_list(rule_dict, key, min_value, range_value, max_value,
                      default_value):
-    """
+    """Defines a default range for an incompletely defined range in a rule.
+
     This function allows for the definition of a default range for an
     incompletely defined range in a rule dictionary. It will check
     rule_dict for key + suffixes. it will return a list containing the values
