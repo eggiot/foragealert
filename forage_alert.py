@@ -298,7 +298,11 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
 # Rule class
 class Rule():
     def __init__(self, rule_dict):
-        self.rule = rule_dict
+        self.rule_dict = rule_dict
+        list_keys = [key for key in self.rule_dict if "_list" in key]
+        for key in list_keys:
+            value = self.rule_dict[key]
+            self.rule_dict[key] = [int(v) for v in value.split(",")]
         self.hours = build_range_list(self.rule, "hour", 0, 23, 23, [])
         self.days = build_range_list(self.rule, "day", 0, 100, 7, [])
         self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
@@ -400,20 +404,6 @@ def xml_to_foraging_items(xml):
         current_item = ForagingItem(raw_item)
         current_item_rules = raw_items[raw_item]
         for rule in current_item_rules.values():
-
-            # convert lists to python list
-            for item in rule:
-                # do some error handling for list definitions
-                if "_list" in item:
-                    item_value = rule[item]
-                    try:
-                        rule[item] = list(eval(item_value))
-                    except TypeError:
-                        rule[item] = eval("[" + item_value + "]")
-                    except Exception:
-                        error_message = "List defined incorrectly in item " +\
-                                        item + " in rule " + rule
-                        errorandquit(error_message)
             current_item.add_rule(Rule(rule))
         foraging_items.append(current_item)
     return foraging_items
