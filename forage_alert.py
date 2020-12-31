@@ -190,8 +190,7 @@ def get_weather(days, hours):
 
 # MATCHING FUNCTIONS
 def strip_match_keys(match_key):
-    """
-    Strip "_list", "_min", or "_max" from match_key
+    """Strip "_list", "_min", or "_max" from match_key
     """
     to_strip = ["_list", "_min", "_max"]
     for value in to_strip:
@@ -254,14 +253,8 @@ def match_rule(weather, rule):
     If the fields specified in weather match those same fields in rule, it
     returns True, otherwise False
     """
-    for key in weather:
-        try:
-            key = strip_match_keys(key)
-            if not match_rule_value(weather, rule, key):
-                return False
-        except KeyError:
-            return False
-    return True
+    keys = set([strip_match_keys(key) for key in weather])
+    return all(match_rule_value(weather, rule, key) for key in keys)
 
 
 def build_range_list(rule_dict, key, min_value, range_value, max_value,
