@@ -32,32 +32,6 @@ args = parser.parse_args()
 
 location_request = args.latitude, args.longitude
 
-# global variables
-CURRENT_DAY = 0
-CURRENT_HOUR = datetime.datetime.now().hour
-CURRENT_MONTH = datetime.datetime.now().month
-# hour lists
-ALL_DAY = list(range(24))
-ALL_NIGHT = list(range(7))
-ALL_EVENING = list(range(19, 23))
-# day lists
-PAST_WEEK = list(range(7))
-PAST_2_WEEKS = list(range(14))
-PAST_MONTH = list(range(31))
-PAST_YEAR = list(range(365))
-
-JAN, FEB, MAR, APR, MAY, JUN = 1, 2, 3, 4, 5, 6
-JUL, AUG, SEP, OCT, NOV, DEC = 7, 8, 9, 10, 11, 12
-
-SUMMER = list(range(JUN, AUG))
-SPRING = list(range(MAR, APR))
-AUTUMN = list(range(SEP, NOV))
-WINTER = [DEC, JAN, FEB]
-
-RELATIVE_DAY = 0
-ABSOLUTE_DAY = 1
-NON_DAY = 2
-
 db_file_path = expanduser("~/bin/my_utilities/databases/foragealert/db.db")
 db_new = not os.path.isfile(db_file_path)
 sqlite3_detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
@@ -100,27 +74,12 @@ def day_absolute_to_relative(absolute):
     return abs((today - date).days)
 
 
-def test_day_format(day):
-    """
-    Tests input to see if it's a relative day, an absolute day or neither
-    """
-    try:
-        int(day)
-        return RELATIVE_DAY
-    except ValueError:
-        pass
-    regex = "[0-9]+-[0-9]+-[0-9]+"
-    try:
-        if matches_regex(regex, day):
-            return ABSOLUTE_DAY
-        else:
-            return NON_DAY
-    except AttributeError:
-        return NON_DAY
+def is_relative_day(day):
+    return type(day) == int
 
 
-def day_range(days):
-    return list(range(days))
+def is_absolute_day(day):
+    return matches_regex("[0-9]+-[0-9]+-[0-9]+", day)
 
 
 def format_list_for_db(values):
@@ -154,10 +113,11 @@ def update_weather():
     This function gets the current weather and adds it to our weather database
     """
     current = []
+    current_day = 0
     with forecast(ds_key, *location_request, units="uk2") as location:
         raw = location['hourly']['data'][0]
-        current.append(CURRENT_HOUR)
-        current.append(day_relative_to_absolute(CURRENT_DAY))
+        current.append(datetime.datetime.now().hour)
+        current.append(day_relative_to_absolute(current_day))
         current.append(raw["temperature"])
         current.append(raw["apparentTemperature"])
         current.append(raw["precipIntensity"])
@@ -413,8 +373,9 @@ class Rule():
         rule over the specified percentage of instances
         """
         if self.pick_hours:
-            pick_now = CURRENT_HOUR in self.pick_hours
-            pick_today = any(hour > CURRENT_HOUR for hour in self.pick_hours)
+            current_hour = datetime.datetime.now().hour
+            pick_now = current_hour in self.pick_hours
+            pick_today = any(hour > current_hour for hour in self.pick_hours)
             if pick_now:
                 return True
             elif pick_today:
@@ -422,7 +383,8 @@ class Rule():
             else:
                 return False
         elif self.months:
-            if CURRENT_MONTH in self.months:
+            current_month = datetime.datetime.now().month
+            if current_month in self.months:
                 return True
             else:
                 return False
