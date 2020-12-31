@@ -299,6 +299,7 @@ def build_range_list(rule_dict, key, min_value, range_value, max_value,
 class Rule():
     def __init__(self, rule_dict):
         self.rule_dict = rule_dict
+        # list keys should be a string of comma separated integer values
         list_keys = [key for key in self.rule_dict if "_list" in key]
         for key in list_keys:
             value = self.rule_dict[key]
