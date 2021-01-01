@@ -2,10 +2,8 @@
 
 import datetime
 import argparse
-import os
 import re
 import sys
-from darksky import forecast
 from os.path import expanduser
 import xmltodict
 from matching import match_rule
@@ -33,6 +31,9 @@ parser.add_argument('-v', '--version', action='version',
 args = parser.parse_args()
 
 location_request = args.latitude, args.longitude
+
+db_location = "~/bin/my_utilities/databases/foragealert/db.db"
+db_object = db.get_db(expanduser(db_location))
 
 
 # HELPER FUNCTIONS
@@ -121,9 +122,7 @@ class Rule():
             current_hour = datetime.datetime.now().hour
             pick_now = current_hour in self.pick_hours
             pick_today = any(hour > current_hour for hour in self.pick_hours)
-            if pick_now:
-                return True
-            elif pick_today:
+            if pick_now or pick_today:
                 return True
             else:
                 return False
@@ -135,7 +134,7 @@ class Rule():
                 return False
         else:
             # get the weather for the hours and days specified
-            weathers = db.get_weather(self.days, self.hours)
+            weathers = db.get_weather(self.days, self.hours, db_object)
             weathers = all(match_rule(w, self.rule) for w in weathers)
 
             # calculate percentage of True values
@@ -196,7 +195,7 @@ def xml_to_foraging_items(xml):
 
 # check mode and act accordingly
 if args.mode == "update":
-    db.update_weather(location_request)
+    db.update_weather(location_request, db_object)
 elif args.mode == "alert":
     with open(args.items, 'r') as file:
         data = file.read()

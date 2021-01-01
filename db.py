@@ -1,13 +1,17 @@
 import sqlite3
 import os
-from os.path import expanduser
+from darksky import forecast
 
-db_file_path = expanduser("~/bin/my_utilities/databases/foragealert/db.db")
-db_new = not os.path.isfile(db_file_path)
-sqlite3_detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
-db = sqlite3.connect(db_file_path, detect_types=sqlite3_detect_types)
-if db_new:
-    db.create_db()
+
+def get_db(file_path):
+    """Returns a sqlite cursor, creating database if it doesn't exist.
+    """
+    db_new = not os.path.isfile(file_path)
+    sqlite3_detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+    db = sqlite3.connect(db_file_path, detect_types=sqlite3_detect_types)
+    if db_new:
+        create_db()
+    return db
 
 
 def format_list_for_db(values):
@@ -33,7 +37,7 @@ def create_db():
     cursor.close()
 
 
-def update_weather(location_request):
+def update_weather(location_request, db):
     """Gets the current weather and adds it to our weather database
     """
     current = []
@@ -67,7 +71,7 @@ def update_weather(location_request):
     cursor.close()
 
 
-def get_weather(days, hours):
+def get_weather(days, hours, db):
     """ Gets the weather on the specified days and hours.
 
     This is the most general-purpose weather api call. It gets the weather on
