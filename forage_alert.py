@@ -122,16 +122,10 @@ class Rule():
             current_hour = datetime.datetime.now().hour
             pick_now = current_hour in self.pick_hours
             pick_today = any(hour > current_hour for hour in self.pick_hours)
-            if pick_now or pick_today:
-                return True
-            else:
-                return False
+            return pick_now or pick_today
         elif self.months:
             current_month = datetime.datetime.now().month
-            if current_month in self.months:
-                return True
-            else:
-                return False
+            return current_month in self.months
         else:
             # get the weather for the hours and days specified
             weathers = db.get_weather(self.days, self.hours, db_object)
@@ -142,16 +136,10 @@ class Rule():
                 num_matches = len([current for current in weathers if current])
                 num_tests = len(weathers)
                 percentage = num_matches / num_tests * 100
-                if percentage >= self.amount:
-                    return True
-                else:
-                    return False
+                return percentage >= self.amount
             # are there any non-matching instances?
             else:
-                if False in weathers:
-                    return False
-                else:
-                    return True
+                return False not in weathers
 
 
 # ForagingItem class
@@ -178,7 +166,7 @@ class ForagingItem():
 
     def alert(self):
         if self.check():
-            print("You should forage " + self.name + " right now!")
+            print(f"You should forage {self.name} right now!")
 
 
 def xml_to_foraging_items(xml):
