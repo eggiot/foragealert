@@ -33,6 +33,7 @@ location_request = args.latitude, args.longitude
 db_location = "~/bin/my_utilities/databases/foragealert/db.db"
 db_object = db.get_db(expanduser(db_location))
 
+
 # HELPER FUNCTIONS
 def matches_regex(regex, text):
     """ Returns true only if the whole of the text matches the regex
@@ -133,7 +134,7 @@ class ForagingItem():
 
     def alert(self):
         if self.check():
-            print(f"You should forage {self.name} right now!")
+            print(f"You should forage {self.name} today")
 
 
 def xml_to_foraging_items(xml):
