@@ -29,5 +29,33 @@
             <hour_max>23</hour_max>
             <temperature_min>10</temperature_min>
         </temp_rule>
+        <season_rule>
+            <month_list>6,7</month_list>
+        </season_rule>
     </elderflower>
+    <oyster>
+        <dry_rule>
+            <day_min>1</day_min>
+            <precipitationprobability_max>15</precipitationprobability_max>
+            <amount>60</amount>
+        </dry_rule>
+        <wet_rule>
+            <day_list>0,1</day_list>
+            <precipitationprobability_min>50</precipitationprobability_min>
+            <amount>75</amount>
+        </wet_rule>
+        <warm_rule>
+            <day_min>1</day_min>
+            <hour_min>10</hour_min>
+            <hour_max>18</hour_max>
+            <temperature_min>10</temperature_min>
+            <amount>60</amount>
+        </warm_rule>
+        <cool_rule>
+            <day_list>0,1</day_list>
+            <temperature_max>10</temperature_max>
+            <temperature_min>0</temperature_min>
+            <amount>60</amount>
+        </cool_rule>
+    </oyster>
 </items>
