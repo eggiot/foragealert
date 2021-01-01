@@ -1,6 +1,8 @@
 import sqlite3
 import os
+from os.path import expanduser
 from darksky import forecast
+import datetime
 
 
 def get_db(file_path):
@@ -8,21 +10,21 @@ def get_db(file_path):
     """
     db_new = not os.path.isfile(file_path)
     sqlite3_detect_types = sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
-    db = sqlite3.connect(db_file_path, detect_types=sqlite3_detect_types)
+    db = sqlite3.connect(file_path, detect_types=sqlite3_detect_types)
     if db_new:
-        create_db()
+        create_db(db)
     return db
 
 
 def format_list_for_db(values):
     """Converts a python list to a sqlite list string
     """
-    db_values = ", ".join([f"'{str(value)}'" for value in values])
+    db_values = ", ".join([str(value) for value in values])
     return f"({db_values})"
 
 
 # DATABASE FUNCTIONS
-def create_db():
+def create_db(db):
     """ Create the database.
     """
     cursor = db.cursor()
@@ -32,14 +34,16 @@ def create_db():
                "windspeed decimal", "windbearing decimal", "windgust decimal",
                "pressure decimal", "cloudcover decimal", "uvindex decimal",
                "visibility decimal"]
-    columns = format_list_for_db(columns)
-    cursor.execute("CREATE TABLE weather" + columns)
+    columns = ", ".join(columns)
+    cursor.execute(f"CREATE TABLE weather({columns})")
     cursor.close()
 
 
 def update_weather(location_request, db):
     """Gets the current weather and adds it to our weather database
     """
+    with open(expanduser("~/bin/my_utilities/config/darksky-key")) as f:
+      ds_key = f.readline().strip()
     current = []
     current_day = 0
     with forecast(ds_key, *location_request, units="uk2") as location:
@@ -66,6 +70,7 @@ def update_weather(location_request, db):
                "windgust", "pressure", "cloudcover", "uvindex", "visibility"]
     columns = format_list_for_db(columns)
     statement = f"INSERT INTO WEATHER {columns} VALUES {current}"
+    print(statement)
     cursor = db.cursor()
     cursor.execute(statement)
     cursor.close()
@@ -107,3 +112,31 @@ def get_weather(days, hours, db):
                        "visibility": weather[15]}
             weathers.append(weather)
     return weathers
+
+
+def day_relative_to_absolute(relative):
+    """ Converts a relative day to an absolute date string
+    """
+    today = datetime.datetime.today()
+    delta = datetime.timedelta(days=relative)
+    return (today - delta).strftime("%Y-%m-%d")
+
+
+def day_absolute_to_relative(absolute):
+    """ Converts an absolute date string to relative day
+    """
+    today = datetime.datetime.today()
+    date = datetime.datetime.strptime(absolute, "%Y-%m-%d")
+    return abs((today - date).days)
+
+
+def is_relative_day(day):
+    """Tests if a day is a relative day
+    """
+    return type(day) == int
+
+
+def is_absolute_day(day):
+    """Tests if a day is an absolute day
+    """
+    return matches_regex("[0-9]+-[0-9]+-[0-9]+", day)

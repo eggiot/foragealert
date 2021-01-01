@@ -1,32 +1,33 @@
-<morel>
-    <temp_rule>
-        <day_max>7</day_max>
-        <hour_max>8</hour_max>
-        <temperature_min>10</temperature_min>>
-    </temp_rule>>
-    <rain_rule>
-        <day_max>7</day_max>
-        <hour_max>23</hour_max>
-        <precipitationprobability_min>50</precipitationprobability_min>>
-        <amount>60</amount>
-    </rain_rule>>
-</morel>
-
-<elderflower>
-    <dry_rule>
-        <day>0</day>
-        <hour_max>23</hour_max>
-        <precipitationprobability>0</precipitationprobability>>
-    </dry_rule>>
-    <clear_rule>
-        <day>0</day>
-        <hour_min>5</hour_min>
-        <cloudcover_max>15</cloudcover_max>
-        <amount>75</amount>
-    </clear_rule>>
-    <temp_rule>
-        <day>0</day>
-        <hour_max>23</hour_max>
-        <temperature_min>10</temperature_min>>
-    </temp_rule>>
-</elderflower>
+<items>
+    <morel>
+        <temp_rule>
+            <day_max>7</day_max>
+            <hour_max>8</hour_max>
+            <temperature_min>10</temperature_min>>
+        </temp_rule>>
+        <rain_rule>
+            <day_max>7</day_max>
+            <hour_max>23</hour_max>
+            <precipitationprobability_min>50</precipitationprobability_min>>
+            <amount>60</amount>
+        </rain_rule>>
+    </morel>
+    <elderflower>
+        <dry_rule>
+            <day>0</day>
+            <hour_max>23</hour_max>
+            <precipitationprobability>0</precipitationprobability>>
+        </dry_rule>>
+        <clear_rule>
+            <day>0</day>
+            <hour_min>5</hour_min>
+            <cloudcover_max>15</cloudcover_max>
+            <amount>75</amount>
+        </clear_rule>>
+        <temp_rule>
+            <day>0</day>
+            <hour_max>23</hour_max>
+            <temperature_min>10</temperature_min>>
+        </temp_rule>>
+    </elderflower>
+</items>

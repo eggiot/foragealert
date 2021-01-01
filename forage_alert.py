@@ -12,8 +12,6 @@ import db
 
 # get Dark Sky API key
 ds_attribution = "Powered by Dark Sky: https://darksky.net/poweredby/."
-with open(expanduser("~/bin/my_utilities/config/darksky-key")) as f:
-    ds_key = f.readline().strip()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("latitude", help="Latitude",
@@ -35,7 +33,6 @@ location_request = args.latitude, args.longitude
 db_location = "~/bin/my_utilities/databases/foragealert/db.db"
 db_object = db.get_db(expanduser(db_location))
 
-
 # HELPER FUNCTIONS
 def matches_regex(regex, text):
     """ Returns true only if the whole of the text matches the regex
@@ -52,47 +49,20 @@ def errorandquit(error_message):
     sys.exit(1)
 
 
-def day_relative_to_absolute(relative):
-    """ Converts a relative day to an absolute date string
-    """
-    today = datetime.datetime.today()
-    delta = datetime.timedelta(days=relative)
-    return (today - delta).strftime("%Y-%m-%d")
-
-
-def day_absolute_to_relative(absolute):
-    """ Converts an absolute date string to relative day
-    """
-    today = datetime.datetime.today()
-    date = datetime.datetime.strptime(absolute, "%Y-%m-%d")
-    return abs((today - date).days)
-
-
-def is_relative_day(day):
-    """Tests if a day is a relative day
-    """
-    return type(day) == int
-
-
-def is_absolute_day(day):
-    """Tests if a day is an absolute day
-    """
-    return matches_regex("[0-9]+-[0-9]+-[0-9]+", day)
-
-
 # Rule class
 class Rule():
     def __init__(self, rule_dict):
-        self.rule_dict = rule_dict
+        self.rule_dict = {k: int(v) for (k, v) in rule_dict.items()}
         # list keys should be a string of comma separated integer values
         list_keys = [key for key in self.rule_dict if "_list" in key]
         for key in list_keys:
             value = self.rule_dict[key]
             self.rule_dict[key] = [int(v) for v in value.split(",")]
-        self.hours = build_range_list(self.rule, "hour", 0, 23, 23, [])
-        self.days = build_range_list(self.rule, "day", 0, 100, 7, [])
-        self.pick_hours = build_range_list(self.rule, "pick", 0, 1, 23, [])
-        self.months = build_range_list(self.rule, "month", 0, 12, 12, [])
+        self.hours = build_range_list(self.rule_dict, "hour", 0, 23, 23, [])
+        self.days = build_range_list(self.rule_dict, "day", 0, 100, 7, [])
+        self.pick_hours = build_range_list(self.rule_dict, "pick", 0, 1, 23,
+                                           [])
+        self.months = build_range_list(self.rule_dict, "month", 0, 12, 12, [])
 
         if self.pick_hours and (self.hours or self.days or self.months):
             message = "Cannot define pick hours alongside hours, days, or\
@@ -172,13 +142,12 @@ class ForagingItem():
 def xml_to_foraging_items(xml):
     foraging_items = []
     # save xml data as ordered dict. item name as key, dict of rules as value
-    raw_items = xmltodict.parse(xml)
+    raw_items = xmltodict.parse(xml)["items"]
 
     # convert raw dicts into foraging item with attached rules
-    for foraging_item, current_item_rules in raw_items.items():
+    for item_name, item_rules in raw_items.items():
         # key is foraging object name, value are rule_dicts
-        current_item = ForagingItem(foraging_item,
-                                    rule_dicts=current_item_rules.values())
+        current_item = ForagingItem(item_name, rule_dicts=item_rules.values())
         foraging_items.append(current_item)
     return foraging_items
 
