@@ -187,7 +187,7 @@ def xml_to_foraging_items(xml):
     raw_items = xmltodict.parse(xml)
 
     # convert raw dicts into foraging item with attached rules
-    for foraging_item, current_item_rules in raw_items:
+    for foraging_item, current_item_rules in raw_items.items():
         # key is foraging object name, value are rule_dicts
         current_item = ForagingItem(foraging_item,
                                     rule_dicts=current_item_rules.values())
