@@ -120,7 +120,6 @@ class ForagingItem():
     def __init__(self, name, rule_dicts=None):
         self.name = name
         self.rules = []
-        self.status = True
 
         # list of rule_dicts
         if rule_dicts:
@@ -130,12 +129,7 @@ class ForagingItem():
         self.rules.append(rule)
 
     def check(self):
-        for rule in self.rules:
-            if not rule.test():
-                self.status = False
-                return False
-        self.status = True
-        return True
+        return all(rule.test() for rule in self.rules)
 
     def alert(self):
         if self.check():
@@ -143,6 +137,8 @@ class ForagingItem():
 
 
 def xml_to_foraging_items(xml):
+    """Convert XML rule definitions to a list of ForagingObjects
+    """
     foraging_items = []
     # save xml data as ordered dict. item name as key, dict of rules as value
     raw_items = xmltodict.parse(xml)["items"]
