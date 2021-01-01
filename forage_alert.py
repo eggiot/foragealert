@@ -156,10 +156,14 @@ class Rule():
 
 # ForagingItem class
 class ForagingItem():
-    def __init__(self, name):
+    def __init__(self, name, rule_dicts=None):
         self.name = name
         self.rules = []
         self.status = True
+
+        # list of rule_dicts
+        if rule_dicts:
+            self.rules = [Rule(rule_dict) for rule_dict in rule_dicts]
 
     def add_rule(self, rule):
         self.rules.append(rule)
@@ -182,13 +186,11 @@ def xml_to_foraging_items(xml):
     # save xml data as ordered dict. item name as key, dict of rules as value
     raw_items = xmltodict.parse(xml)
 
-    # convert raw dicts into foraging item with attached rules and add to
-    # foraging_items list
-    for raw_item in raw_items:
-        current_item = ForagingItem(raw_item)
-        current_item_rules = raw_items[raw_item]
-        for rule in current_item_rules.values():
-            current_item.add_rule(Rule(rule))
+    # convert raw dicts into foraging item with attached rules
+    for foraging_item, current_item_rules in raw_items:
+        # key is foraging object name, value are rule_dicts
+        current_item = ForagingItem(foraging_item,
+                                    rule_dicts=current_item_rules.values())
         foraging_items.append(current_item)
     return foraging_items
 
