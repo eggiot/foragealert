@@ -73,9 +73,9 @@ class Rule():
                        same rule."
             raise Exception(message)
         # set amount
-        if "amount" in self.rule.keys():
-            self.amount = self.rule["amount"]
-            self.rule.pop("amount")
+        if "amount" in self.rule_dict.keys():
+            self.amount = self.rule_dict["amount"]
+            self.rule_dict.pop("amount")
         else:
             self.amount = 100
 
@@ -99,17 +99,20 @@ class Rule():
         else:
             # get the weather for the hours and days specified
             weathers = db.get_weather(self.days, self.hours, db_object)
-            weathers = all(match_rule(w, self.rule) for w in weathers)
-
             # calculate percentage of True values
             if self.amount < 100:
-                num_matches = len([current for current in weathers if current])
+                weathers = [match_rule(w, self.rule_dict) for w in weathers]
                 num_tests = len(weathers)
-                percentage = num_matches / num_tests * 100
-                return percentage >= self.amount
+                if num_tests > 0:
+                    num_matches = len([w for w in weathers if w])
+                    percentage = num_matches / num_tests * 100
+                    return percentage >= self.amount
+                # there are no weathers matching the given hours and days
+                else:
+                    return False
             # are there any non-matching instances?
             else:
-                return False not in weathers
+                return all(match_rule(w, self.rule) for w in weathers)
 
 
 # ForagingItem class
