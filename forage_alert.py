@@ -196,7 +196,7 @@ def xml_to_foraging_items(xml):
 
 # check mode and act accordingly
 if args.mode == "update":
-    db.update_weather()
+    db.update_weather(location_request)
 elif args.mode == "alert":
     with open(args.items, 'r') as file:
         data = file.read()

@@ -1,4 +1,6 @@
 import sqlite3
+import os
+from os.path import expanduser
 
 db_file_path = expanduser("~/bin/my_utilities/databases/foragealert/db.db")
 db_new = not os.path.isfile(db_file_path)
@@ -31,7 +33,7 @@ def create_db():
     cursor.close()
 
 
-def update_weather():
+def update_weather(location_request):
     """Gets the current weather and adds it to our weather database
     """
     current = []
