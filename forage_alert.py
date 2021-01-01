@@ -162,4 +162,5 @@ elif args.mode == "alert":
     foraging_items = xml_to_foraging_items(data)
 
     for foraging_item in foraging_items:
-        foraging_item.check()
+        if foraging_item.check():
+            foraging_item.alert()
